@@ -1,0 +1,85 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Movementplayer : MonoBehaviour
+{
+    private float move = 0f;
+    public float speed;
+    private Rigidbody2D rib;
+    public float JumpSpeed;
+    public Vector3 Reposition;
+    public RepositionDelay rd;
+    public GameObject Bulletmove;
+    Vector2 bullpos;
+    public float firerate = 0.5f;
+    float nextfire = 0.0f;
+    public static bool forward=true;
+    // Start is called before the first frame update
+    void Start()
+    {
+        rib = GetComponent<Rigidbody2D>();
+        Reposition = transform.position;
+        rd = FindObjectOfType<RepositionDelay>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        move = Input.GetAxis("Horizontal");
+        if(Input.GetButtonDown("Fire1")&&Time.time>nextfire)
+        {
+            nextfire = Time.time + firerate;
+            Fire();
+        }
+        if (move > 0f)
+        {
+            rib.velocity = new Vector2(move * speed, rib.velocity.y);
+            transform.localScale = new Vector2(1.09099f, 1f);
+            forward = true;
+        }
+        else if (move < 0f)
+        {
+            rib.velocity = new Vector2(move * speed, rib.velocity.y);
+            transform.localScale = new Vector2(-1.09099f, 1f);
+            forward = false;
+        }
+        else
+        {
+            rib.velocity = new Vector2(0, rib.velocity.y);
+        }
+        if (Input.GetButtonDown("Jump"))
+        {
+            sounds.Playsound("jump");
+            rib.velocity = new Vector2(rib.velocity.x, JumpSpeed);
+        }
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Checkpoint")
+        {
+            Reposition = collision.transform.position;
+        }
+        if (collision.tag == "FallDetector")
+        {
+            rd.Delay();
+            //transform.position = Reposition;
+        }
+    }
+    void Fire()
+    {
+        if (forward == true)
+        {
+            bullpos = new Vector2(transform.position.x + 0.3f, transform.position.y + 0.2f);
+            bullpos += new Vector2(1f, -0.43f);
+            Instantiate(Bulletmove, bullpos, Quaternion.identity);
+        }
+        else
+        {
+            bullpos = new Vector2(transform.position.x - 0.3f, transform.position.y + 0.2f);
+            bullpos -= new Vector2(1f, +0.43f);
+            Instantiate(Bulletmove, bullpos, Quaternion.identity);
+        }
+    }
+}
+
